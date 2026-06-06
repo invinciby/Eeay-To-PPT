@@ -1,0 +1,194 @@
+# Easy To PPT Image Editable Skill
+
+这是一个用于 Codex 的 PPT 生产工作流 skill。它面向中文学术汇报、科研报告、项目进展、论文解读等场景，把源材料整理成经过审批的 PPT 大纲、逐页内容、全页幻灯片图片，并可在用户要求时继续重建为更可编辑的 PPTX。
+
+核心原则：先忠实表达材料，再做视觉设计，最后再生成 PPTX。不要编造数据、实验、引用、结果或结论。
+
+## 功能
+
+- 从论文、Markdown、代码说明、实验记录、截图、参考 PPT 风格图等材料生成中文报告型 PPT。
+- 强制经过大纲、逐页内容、风格样张、逐页图片 QA 等审批门。
+- 使用 Image2/Nano2 风格的全页图片生成后端生成 16:9 幻灯片 PNG。
+- 严格保护真实实验图、数据图、截图和表格，不让图像模型重画或篡改内部像素。
+- 支持把批准后的幻灯片 PNG 打包为图片型 PPTX。
+- 可选进行图片到可编辑 PPTX 的重建，尽量恢复文字、简单形状、表格和布局。
+
+## 目录结构
+
+```text
+easy-to-ppt-image-editable-skill/
+├── SKILL.md
+├── README.md
+├── agents/
+│   └── openai.yaml
+├── examples/
+│   ├── production-pack.example.md
+│   └── slide-job.example.json
+├── references/
+│   ├── editable-reconstruction.md
+│   ├── expected-prompt-templates.md
+│   ├── intake-and-gates.md
+│   ├── qa-and-real-figure-policy.md
+│   ├── slide-content-spec.md
+│   └── style-and-image-generation.md
+└── scripts/
+    └── validate_production_pack.py
+```
+
+## 安装
+
+### 方式一：安装为本地 Codex skill
+
+在 Windows PowerShell 中执行：
+
+```powershell
+$dest = "$env:USERPROFILE\.codex\skills\easy-to-ppt-image-editable"
+git clone https://github.com/invinciby/Eeay-To-PPT.git $dest
+```
+
+如果已经克隆过，更新即可：
+
+```powershell
+cd "$env:USERPROFILE\.codex\skills\easy-to-ppt-image-editable"
+git pull
+```
+
+然后重启 Codex，或开启一个新的 Codex 会话，让 skill 元数据被重新扫描。
+
+### 方式二：作为插件 skill 分发
+
+如果要把它放入某个 Codex plugin 中，将整个目录复制到插件的 `skills/` 目录下，并保持目录名稳定：
+
+```text
+my-plugin/
+└── skills/
+    └── easy-to-ppt-image-editable/
+        ├── SKILL.md
+        ├── references/
+        ├── examples/
+        └── scripts/
+```
+
+## 如何触发
+
+在 Codex 中直接说明要使用这个 skill，或提出符合描述的 PPT 生成请求即可。
+
+推荐写法：
+
+```text
+使用 easy-to-ppt-image-editable skill，基于这篇论文和我提供的实验图，生成一套 10 页中文组会汇报 PPT。先给我大纲审批，输出图片型 PPTX。
+```
+
+也可以这样说：
+
+```text
+把这个 Markdown 做成中文学术汇报 PPT，保留我上传的结果图，不要重画数据图，最后给我可编辑 PPTX。
+```
+
+```text
+参考这张 PPT 截图的风格，把我的项目进展材料做成 8 页中文报告 slides。先出大纲，等我批准后再继续。
+```
+
+## 推荐输入
+
+为了减少反复确认，第一次请求最好包含：
+
+- 源材料：论文、Markdown、代码说明、实验记录、粘贴文本或文件路径。
+- 目标场景：组会、开题、答辩、项目汇报、论文解读、技术报告等。
+- 听众：导师、评审、同学、团队、客户或公开展示。
+- 页数：精确页数或最大页数。
+- 语言：中文、英文、双语，或中文为主保留英文术语。
+- 风格参考：PPT 截图、配色偏好、模板截图，或说明“使用默认学术风格”。
+- 必须保留的图片：实验图、结果曲线、截图、表格、照片、logo 等。
+- 输出格式：幻灯片 PNG、图片型 PPTX、可编辑 PPTX，或同时输出。
+
+## 工作流
+
+skill 会按下面顺序推进，默认不会跳过审批门：
+
+1. 信息收集：确认材料、用途、页数、语言、风格、图片和输出格式。
+2. 大纲审批：给出标题、汇报逻辑和逐页标题，等待用户批准。
+3. 逐页内容审批：为每页写核心观点、要点、来源依据、视觉建议和不确定项。
+4. 生产包：把批准内容整理成 Markdown production pack。
+5. 风格与样张：提取参考风格，生成 1-2 页样张，等待批准。
+6. 全页图片生成：每页生成一张 16:9 PNG。
+7. QA 与返修：检查标题、中文文字、来源忠实度、图片保真和版式一致性。
+8. PPTX 输出：按需求打包为图片型 PPTX，或进入可编辑重建流程。
+9. 最终报告：说明产物路径、页数、后端、保留的严格图片和已知限制。
+
+## 生产包校验
+
+`scripts/validate_production_pack.py` 可以检查 Markdown production pack 的基本结构。
+
+示例：
+
+```powershell
+python scripts\validate_production_pack.py examples\production-pack.example.md
+```
+
+输出为 JSON，包含：
+
+- `passed`: 是否通过结构校验。
+- `slide_count`: 检测到的页数。
+- `errors`: 缺失标题、缺失必需章节、重复页码等错误。
+- `warnings`: 缺少元数据、页码不连续、占位符文本等警告。
+
+这个脚本只做结构检查，不判断内容质量、事实正确性或视觉质量。
+
+## 产物建议
+
+推荐让 Codex 在任务目录中使用类似结构保存产物：
+
+```text
+outputs/
+└── <deck-name>/
+    ├── production-pack.md
+    ├── prompts/
+    │   ├── slide_01.prompt.txt
+    │   └── slide_02.prompt.txt
+    ├── origin_image/
+    │   ├── slide_01.png
+    │   └── slide_02.png
+    ├── qa/
+    │   └── qa-report.json
+    ├── deck.image-only.pptx
+    └── editable/
+        ├── deck.editable.pptx
+        └── editability_report.json
+```
+
+## 真实图片保护规则
+
+真实实验图、数据图、截图、表格和论文原图必须作为严格输入资产处理：
+
+- 只能等比缩放、裁剪或放入版面。
+- 不要重画、翻译、改标签、平滑曲线、重绘坐标轴或改变内部像素。
+- 如果图像生成后端不能可靠保留原图，应停止并改用机械排版或重建路线。
+
+## 可编辑 PPTX 的限制
+
+可编辑版是“重建”，不是完美还原。通常可以恢复：
+
+- 标题和正文文字。
+- 简单矩形、卡片、线条、箭头、标记。
+- 可靠识别的简单表格。
+
+通常会保留为图片裁剪：
+
+- 复杂插图。
+- 真实实验图和数据图。
+- 截图、照片、密集图表。
+- 无法可靠 OCR 或重建的视觉区域。
+
+交付时应附带 editability report，说明哪些页面可编辑性有限。
+
+## 开发与维护
+
+更新 skill 时重点检查：
+
+- `SKILL.md` frontmatter 是否包含明确触发描述。
+- `SKILL.md` 是否保持精简，详细规则放在 `references/`。
+- `examples/` 中的示例是否能被 validator 识别。
+- 所有被 `SKILL.md` 引用的文件是否存在。
+- README 中的安装路径和 GitHub 地址是否仍然正确。
+

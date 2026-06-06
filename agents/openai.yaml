@@ -1,0 +1,3 @@
+display_name: Easy To PPT Image Editable
+short_description: Create Chinese academic/report PPT slide images with approval gates and optional editable PPTX reconstruction.
+default_prompt: "Use $easy-to-ppt-image-editable. First confirm source material, audience/use case, page count, language preference, style reference or palette, required images, and output format. Then produce an outline for approval, followed by per-slide content specs, a Markdown production pack, sample Image2 full-slide pages, per-slide QA, and optional editable PPTX reconstruction."

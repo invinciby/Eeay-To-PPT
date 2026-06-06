@@ -1,0 +1,61 @@
+{
+  "slide_id": "slide_02",
+  "slide_number": 2,
+  "approved_title": "方法框架",
+  "expected_output": "origin_image/slide_02.png",
+  "image_backend": {
+    "selected_backend": "built-in image tool",
+    "tool_name": "image_gen",
+    "model": "Image2 or runtime default",
+    "size": "16:9 full-slide"
+  },
+  "language": "Chinese-dominant",
+  "style_reference": {
+    "type": "approved_sample_or_reference_ppt_screenshot",
+    "path": "assets/reference_style.png",
+    "role": "style only"
+  },
+  "slide_content": {
+    "page_role": "method",
+    "core_point": "提出的框架通过特征编码、关系建模和结果校准三个模块完成端到端推理。",
+    "key_points": [
+      "输入首先经过统一特征编码模块",
+      "中间层显式建模样本间关系",
+      "输出端通过校准模块提升稳定性"
+    ],
+    "suggested_visual": "SCI 风格三阶段 pipeline，细线箭头，模块标签清晰。",
+    "source_basis": [
+      "原始材料方法部分",
+      "Figure 1 方法图"
+    ],
+    "open_uncertainties": [
+      "不生成源材料未提供的性能数字"
+    ]
+  },
+  "required_images": [
+    {
+      "path": "assets/figure_1_method.png",
+      "role": "strict_input_asset",
+      "rule": "Preserve internal pixels exactly; only proportional scale or place in frame."
+    }
+  ],
+  "prompt_contract": {
+    "must_preserve_title": true,
+    "must_use_selected_backend": true,
+    "forbidden_final_image_methods": [
+      "HTML/CSS screenshot",
+      "SVG/canvas drawing",
+      "Python/Pillow rendering",
+      "PptxGenJS layout",
+      "manual text overlay"
+    ],
+    "qa_required": [
+      "Chinese text readable",
+      "title preserved",
+      "content faithful",
+      "strict figures unmodified",
+      "16:9 aspect ratio",
+      "style matches approved sample"
+    ]
+  }
+}
