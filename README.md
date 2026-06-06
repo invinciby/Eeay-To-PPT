@@ -1,4 +1,4 @@
-# Easy To PPT Image Editable Skill
+# Easy To PPT Image Editable Skill — V1.0
 
 这是一个用于 Codex 的 PPT 生产工作流 skill。它面向中文学术汇报、科研报告、项目进展、论文解读等场景，把源材料整理成经过审批的 PPT 大纲、逐页内容、全页幻灯片图片，并可在用户要求时继续重建为更可编辑的 PPTX。
 
@@ -13,27 +13,6 @@
 - 支持把批准后的幻灯片 PNG 打包为图片型 PPTX。
 - 可选进行图片到可编辑 PPTX 的重建，尽量恢复文字、简单形状、表格和布局。
 
-## 目录结构
-
-```text
-easy-to-ppt-image-editable-skill/
-├── SKILL.md
-├── README.md
-├── agents/
-│   └── openai.yaml
-├── examples/
-│   ├── production-pack.example.md
-│   └── slide-job.example.json
-├── references/
-│   ├── editable-reconstruction.md
-│   ├── expected-prompt-templates.md
-│   ├── intake-and-gates.md
-│   ├── qa-and-real-figure-policy.md
-│   ├── slide-content-spec.md
-│   └── style-and-image-generation.md
-└── scripts/
-    └── validate_production_pack.py
-```
 
 ## 安装
 
@@ -116,46 +95,8 @@ skill 会按下面顺序推进，默认不会跳过审批门：
 8. PPTX 输出：按需求打包为图片型 PPTX，或进入可编辑重建流程。
 9. 最终报告：说明产物路径、页数、后端、保留的严格图片和已知限制。
 
-## 生产包校验
 
-`scripts/validate_production_pack.py` 可以检查 Markdown production pack 的基本结构。
 
-示例：
-
-```powershell
-python scripts\validate_production_pack.py examples\production-pack.example.md
-```
-
-输出为 JSON，包含：
-
-- `passed`: 是否通过结构校验。
-- `slide_count`: 检测到的页数。
-- `errors`: 缺失标题、缺失必需章节、重复页码等错误。
-- `warnings`: 缺少元数据、页码不连续、占位符文本等警告。
-
-这个脚本只做结构检查，不判断内容质量、事实正确性或视觉质量。
-
-## 产物建议
-
-推荐让 Codex 在任务目录中使用类似结构保存产物：
-
-```text
-outputs/
-└── <deck-name>/
-    ├── production-pack.md
-    ├── prompts/
-    │   ├── slide_01.prompt.txt
-    │   └── slide_02.prompt.txt
-    ├── origin_image/
-    │   ├── slide_01.png
-    │   └── slide_02.png
-    ├── qa/
-    │   └── qa-report.json
-    ├── deck.image-only.pptx
-    └── editable/
-        ├── deck.editable.pptx
-        └── editability_report.json
-```
 
 ## 真实图片保护规则
 
