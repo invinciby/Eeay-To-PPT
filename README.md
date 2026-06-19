@@ -1,135 +1,202 @@
-# Easy To PPT Image Editable Skill — V1.0
-
-这是一个用于 Codex 的 PPT 生产工作流 skill。它面向中文学术汇报、科研报告、项目进展、论文解读等场景，把源材料整理成经过审批的 PPT 大纲、逐页内容、全页幻灯片图片，并可在用户要求时继续重建为更可编辑的 PPTX。
-
-核心原则：先忠实表达材料，再做视觉设计，最后再生成 PPTX。不要编造数据、实验、引用、结果或结论。
-
-## 功能
-
-- 从论文、Markdown、代码说明、实验记录、截图、参考 PPT 风格图等材料生成中文报告型 PPT。
-- 强制经过大纲、逐页内容、风格样张、逐页图片 QA 等审批门。
-- 使用 Image2/Nano2 风格的全页图片生成后端生成 16:9 幻灯片 PNG。
-- 严格保护真实实验图、数据图、截图和表格，不让图像模型重画或篡改内部像素。
-- 支持把批准后的幻灯片 PNG 打包为图片型 PPTX。
-- 可选进行图片到可编辑 PPTX 的重建，尽量恢复文字、简单形状、表格和布局。
+<p align="center">
+  <img src="./assets/brand/easy-to-ppt-logo.png" alt="EasyToPPT logo" width="520">
+</p>
 
 
-## 安装
+# EasyToPPT
 
-### 方式一：安装为本地 Codex skill
+> Two Codex skills for turning raw material, slide images, papers, screenshots, and visual references into polished PPT assets.
 
-在 Windows PowerShell 中执行：
+<p align="center">
+  <strong>EasyToPPT = Image PPT generation + Editable PPT reconstruction</strong>
+</p>
 
-```powershell
-$dest = "$env:USERPROFILE\.codex\skills\easy-to-ppt-image-editable"
-git clone https://github.com/invinciby/Eeay-To-PPT.git $dest
+
+<p align="center">
+  <a href="#-what-is-this">Overview</a> ·
+  <a href="#showcase">Showcase</a> ·
+  <a href="#-the-two-skills">Skills</a> ·
+  <a href="#-workflow">Workflow</a> ·
+  <a href="#-project-structure">Structure</a> ·
+  <a href="#-quick-start">Quick Start</a>
+</p>
+
+
+---
+
+## ✨ What Is This
+
+**EasyToPPT** packages two complementary Codex skills into one presentation automation project:
+
+- **Easy To Image PPT** turns source material into an ordered folder of beautiful 16:9 slide images.
+- **Easy To Edit PPT** reconstructs slide screenshots or page images into editable `.pptx` files.
+
+Together, they cover both sides of modern PPT creation: **generate visually impressive slide pages from content**, then **recover or rebuild slides as editable PowerPoint decks when needed**.
+
+## Showcase
+
+Four primary examples generated with the EasyToPPT workflow.
+
+| Scientific Editorial                                         | Agentic Dark                                                 |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| <img src="./assets/showcase/main-example-oracle-light.png" alt="Scientific editorial EasyToPPT example"> | <img src="./assets/showcase/main-example-agent-dark.png" alt="Agentic dark EasyToPPT example"> |
+| Knowledge graph, literature, AI agent, validation pathways, and scientific discovery flow in a clean editorial style. | A dark neon agent-loop presentation style for LLM-driven hypothesis generation and validation. |
+
+| Hand-Drawn Explainer                                         | Chalkboard Reasoning                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| <img src="./assets/showcase/main-example-sketch.png" alt="Hand-drawn EasyToPPT example"> | <img src="./assets/showcase/main-example-chalkboard.png" alt="Chalkboard EasyToPPT example"> |
+| A playful sketch-note style showing the path from computational oracle to autonomous partner. | A blackboard-style scientific reasoning map with hypothesis space, scoring, causal reasoning, and validation. |
+
+## 🚀 The Two Skills
+
+| Skill               | Output                   | Best For                                                     | Core Promise                                                 |
+| ------------------- | ------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `easy-to-image-ppt` | Ordered PNG slide images | Papers, reports, experiment notes, Markdown, pasted text, reference material | Build a faithful Chinese academic/report slide image set through outline approval, style previews, Image2 generation, QA, and ordered delivery |
+| `easy-to-edit-ppt`  | Editable `.pptx`         | Slide screenshots, page images, existing visual PPT pages    | Reconstruct editable text, native shapes, local visual assets, clean backgrounds, OCR results, validation reports, and region-level editability boundaries |
+
+### `easy-to-image-ppt`
+
+This skill is a **full-slide image deck generator**. It does not create native PowerPoint objects. Instead, it builds a controlled pipeline for generating final slide images:
+
+1. Analyze the user's source material.
+2. Propose a title, page count, outline, and slide titles.
+3. Wait for outline approval.
+4. Generate per-slide content grounded in the source.
+5. Produce a canonical Markdown production pack.
+6. Generate multiple full-deck visual preview collages.
+7. Wait for style direction approval.
+8. Generate final ordered 16:9 slide images.
+9. Run QA for Chinese text, layout, factual faithfulness, and strict figure preservation.
+
+It is designed for Chinese academic/report PPT image sets where **visual quality matters**, but **unsupported data or invented claims are forbidden**.
+
+### `easy-to-edit-ppt`
+
+This skill is an **image-to-editable-PPT reconstruction workflow**. It accepts one or more slide/page images and produces a `.pptx` with editable text and PowerPoint objects where practical.
+
+Its pipeline includes:
+
+1. Run directory creation.
+2. OCR with configured credentials.
+3. Normalized layout and text extraction.
+4. Clean background generation through image editing.
+5. Region classification into native, hybrid, and asset areas.
+6. PPTX construction with layered backgrounds, shapes, visual assets, and editable text.
+7. Text/layout calibration.
+8. Validation, visual comparison, and repair loops.
+9. Final report describing editable regions and visual-fidelity tradeoffs.
+
+It is designed around a pragmatic principle: **make text and simple structure editable, keep dense visuals as movable local assets when that better preserves fidelity**.
+
+## 🧠 Workflow
+
+```mermaid
+flowchart LR
+    A["Source Material"] --> B["easy-to-image-ppt"]
+    B --> C["Approved Outline"]
+    C --> D["Style Preview Collages"]
+    D --> E["Final Ordered Slide PNGs"]
+
+    F["Slide Screenshot / Page Image"] --> G["easy-to-edit-ppt"]
+    G --> H["OCR + Clean Background"]
+    H --> I["Native / Hybrid / Asset Reconstruction"]
+    I --> J["Editable PPTX + Report"]
+
+    E -. "optional reuse" .-> G
 ```
 
-如果已经克隆过，更新即可：
+## 🔥 Why It Stands Out
 
-```powershell
-cd "$env:USERPROFILE\.codex\skills\easy-to-ppt-image-editable"
-git pull
-```
+- **Dual output modes**: final slide images and editable `.pptx`.
+- **Approval-gated generation**: outline and visual direction are approved before expensive final generation.
+- **Grounded content policy**: no invented data, results, citations, or claims.
+- **Strict figure protection**: experiment plots, screenshots, medical/lab images, and data figures are preserved instead of redrawn.
+- **Region-level editability**: reconstruction reports what is native, hybrid, or asset-based.
+- **Repair-aware pipeline**: validates outputs and supports targeted second-pass improvement.
 
-然后重启 Codex，或开启一个新的 Codex 会话，让 skill 元数据被重新扫描。
-
-### 方式二：作为插件 skill 分发
-
-如果要把它放入某个 Codex plugin 中，将整个目录复制到插件的 `skills/` 目录下，并保持目录名稳定：
+## 📦 Project Structure
 
 ```text
-my-plugin/
-└── skills/
-    └── easy-to-ppt-image-editable/
-        ├── SKILL.md
-        ├── references/
-        ├── examples/
-        └── scripts/
+EasyToPPT/
+├─ EasyToEditPPT/
+│  └─ easy-to-edit-ppt-skill/
+│     ├─ SKILL.md
+│     ├─ scripts/
+│     ├─ references/
+│     ├─ server/
+│     ├─ pyproject.toml
+│     ├─ package.json
+│     └─ ocr_setting.example.json
+├─ EasyToImagePPT/
+│  └─ easy-to-image-ppt/
+│     ├─ SKILL.md
+│     ├─ references/
+│     ├─ examples/
+│     ├─ scripts/
+│     └─ agents/
+├─ README.md
+└─ index.html
 ```
 
-## 如何触发
+## ⚡ Quick Start
 
-在 Codex 中直接说明要使用这个 skill，或提出符合描述的 PPT 生成请求即可。
+Clone the repository and inspect the two skill folders:
 
-推荐写法：
+```bash
+git clone https://github.com/<your-name>/EasyToPPT.git
+cd EasyToPPT
+```
+
+For image slide generation, use:
 
 ```text
-使用 easy-to-ppt-image-editable skill，基于这篇论文和我提供的实验图，生成一套 10 页中文组会汇报 PPT。先给我大纲审批，输出图片型 PPTX。
+EasyToImagePPT/easy-to-image-ppt/SKILL.md
 ```
 
-也可以这样说：
+For editable PPT reconstruction, use:
 
 ```text
-把这个 Markdown 做成中文学术汇报 PPT，保留我上传的结果图，不要重画数据图，最后给我可编辑 PPTX。
+EasyToEditPPT/easy-to-edit-ppt-skill/SKILL.md
 ```
 
-```text
-参考这张 PPT 截图的风格，把我的项目进展材料做成 8 页中文报告 slides。先出大纲，等我批准后再继续。
+If using `easy-to-edit-ppt`, configure OCR credentials from the example:
+
+```bash
+cp EasyToEditPPT/easy-to-edit-ppt-skill/ocr_setting.example.json \
+   EasyToEditPPT/easy-to-edit-ppt-skill/ocr_setting.json
 ```
 
-## 推荐输入
+Then fill:
 
-为了减少反复确认，第一次请求最好包含：
+```json
+{
+  "apiUrl": "your OCR job endpoint",
+  "accessToken": "your token",
+  "timeoutMs": "180000"
+}
+```
 
-- 源材料：论文、Markdown、代码说明、实验记录、粘贴文本或文件路径。
-- 目标场景：组会、开题、答辩、项目汇报、论文解读、技术报告等。
-- 听众：导师、评审、同学、团队、客户或公开展示。
-- 页数：精确页数或最大页数。
-- 语言：中文、英文、双语，或中文为主保留英文术语。
-- 风格参考：PPT 截图、配色偏好、模板截图，或说明“使用默认学术风格”。
-- 必须保留的图片：实验图、结果曲线、截图、表格、照片、logo 等。
-- 输出格式：幻灯片 PNG、图片型 PPTX、可编辑 PPTX，或同时输出。
+> Do not commit real OCR tokens. Keep `ocr_setting.json` local.
 
-## 工作流
+## 🖼️ Web Showcase
 
-skill 会按下面顺序推进，默认不会跳过审批门：
+Open [`index.html`](./index.html) locally to view the project landing page.
 
-1. 信息收集：确认材料、用途、页数、语言、风格、图片和输出格式。
-2. 大纲审批：给出标题、汇报逻辑和逐页标题，等待用户批准。
-3. 逐页内容审批：为每页写核心观点、要点、来源依据、视觉建议和不确定项。
-4. 生产包：把批准内容整理成 Markdown production pack。
-5. 风格与样张：提取参考风格，生成 1-2 页样张，等待批准。
-6. 全页图片生成：每页生成一张 16:9 PNG。
-7. QA 与返修：检查标题、中文文字、来源忠实度、图片保真和版式一致性。
-8. PPTX 输出：按需求打包为图片型 PPTX，或进入可编辑重建流程。
-9. 最终报告：说明产物路径、页数、后端、保留的严格图片和已知限制。
+It is a static, dependency-free showcase page suitable for GitHub Pages:
 
+1. Push the repository to GitHub.
+2. Go to **Settings → Pages**.
+3. Select the repository root as the source.
+4. Visit the generated GitHub Pages URL.
 
+## 🛡️ Design Philosophy
 
+EasyToPPT is built around one practical belief:
 
-## 真实图片保护规则
+> PPT automation should respect both visual fidelity and editability.
 
-真实实验图、数据图、截图、表格和论文原图必须作为严格输入资产处理：
+Some workflows need stunning final slide images. Some need fully editable PowerPoint decks. Some need a hybrid. This project gives Codex a structured way to choose the right path instead of forcing every slide through the same brittle conversion strategy.
 
-- 只能等比缩放、裁剪或放入版面。
-- 不要重画、翻译、改标签、平滑曲线、重绘坐标轴或改变内部像素。
-- 如果图像生成后端不能可靠保留原图，应停止并改用机械排版或重建路线。
+## 📄 License
 
-## 可编辑 PPTX 的限制
-
-可编辑版是“重建”，不是完美还原。通常可以恢复：
-
-- 标题和正文文字。
-- 简单矩形、卡片、线条、箭头、标记。
-- 可靠识别的简单表格。
-
-通常会保留为图片裁剪：
-
-- 复杂插图。
-- 真实实验图和数据图。
-- 截图、照片、密集图表。
-- 无法可靠 OCR 或重建的视觉区域。
-
-交付时应附带 editability report，说明哪些页面可编辑性有限。
-
-## 开发与维护
-
-更新 skill 时重点检查：
-
-- `SKILL.md` frontmatter 是否包含明确触发描述。
-- `SKILL.md` 是否保持精简，详细规则放在 `references/`。
-- `examples/` 中的示例是否能被 validator 识别。
-- 所有被 `SKILL.md` 引用的文件是否存在。
-- README 中的安装路径和 GitHub 地址是否仍然正确。
-
+Check the license files inside each skill directory before redistribution.
