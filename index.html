@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EasyToPPT | Dual Skill Presentation Engine</title>
+  <meta name="description" content="EasyToPPT packages two Codex skills: generate ordered PPT images from source material, and reconstruct slide screenshots into editable PowerPoint decks.">
+  <style>
+    :root {
+      --ink: #101015;
+      --muted: #666475;
+      --paper: #f6f1e8;
+      --paper-deep: #e7dccb;
+      --ember: #ff4b2f;
+      --acid: #d5ff3f;
+      --cyan: #16d8ff;
+      --violet: #7d57ff;
+      --line: rgba(16, 16, 21, .16);
+      --shadow: 0 24px 70px rgba(16, 16, 21, .18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Aptos", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 15% 12%, rgba(255, 75, 47, .20), transparent 24rem),
+        radial-gradient(circle at 85% 6%, rgba(22, 216, 255, .22), transparent 22rem),
+        linear-gradient(135deg, #fbf7ed 0%, var(--paper) 42%, #eee4d5 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .42;
+      background-image:
+        linear-gradient(rgba(16, 16, 21, .045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(16, 16, 21, .045) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: linear-gradient(to bottom, black, transparent 82%);
+      z-index: -2;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .22;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
+      z-index: -1;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 18px 0;
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      width: 190px;
+      text-decoration: none;
+    }
+
+    .brand img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-links a {
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 14px;
+      background: rgba(255, 255, 255, .32);
+    }
+
+    .hero {
+      min-height: 82vh;
+      display: grid;
+      grid-template-columns: 1.02fr .98fr;
+      align-items: center;
+      gap: 44px;
+      padding: 36px 0 64px;
+    }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      background: var(--acid);
+      font-size: 13px;
+      font-weight: 900;
+      text-transform: uppercase;
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+
+    h1 {
+      max-width: 860px;
+      margin: 24px 0 18px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(40px, 4.3vw, 64px);
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    h1 .line {
+      display: block;
+      white-space: nowrap;
+    }
+
+    .hero-copy {
+      max-width: 640px;
+      font-size: clamp(17px, 1.55vw, 21px);
+      line-height: 1.45;
+      color: #2b2932;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 30px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 12px 18px;
+      border: 2px solid var(--ink);
+      border-radius: 8px;
+      color: var(--ink);
+      font-weight: 900;
+      text-decoration: none;
+      box-shadow: 6px 6px 0 var(--ink);
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+
+    .button:hover {
+      transform: translate(3px, 3px);
+      box-shadow: 3px 3px 0 var(--ink);
+    }
+
+    .button.primary {
+      background: var(--ember);
+      color: white;
+    }
+
+    .button.secondary {
+      background: white;
+    }
+
+    .stage {
+      position: relative;
+      min-height: 480px;
+      display: grid;
+      place-items: center;
+    }
+
+    .orbit {
+      position: absolute;
+      width: min(39vw, 460px);
+      aspect-ratio: 1;
+      border: 2px dashed rgba(16, 16, 21, .28);
+      border-radius: 50%;
+      animation: spin 18s linear infinite;
+    }
+
+    .deck {
+      position: absolute;
+      width: min(35vw, 390px);
+      aspect-ratio: 16 / 10;
+      border: 2px solid var(--ink);
+      border-radius: 8px;
+      background: #fffdf8;
+      box-shadow: var(--shadow);
+      transform: rotate(-7deg);
+      overflow: hidden;
+    }
+
+    .deck::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, var(--ink) 0 24%, transparent 24%),
+        radial-gradient(circle at 76% 28%, var(--cyan) 0 11%, transparent 12%),
+        linear-gradient(135deg, transparent 0 52%, rgba(255, 75, 47, .18) 52% 100%);
+    }
+
+    .deck::after {
+      content: "PPT";
+      position: absolute;
+      left: 28px;
+      bottom: 22px;
+      color: white;
+      font-size: 58px;
+      font-weight: 1000;
+      letter-spacing: .05em;
+    }
+
+    .cardlet {
+      position: absolute;
+      border: 2px solid var(--ink);
+      border-radius: 8px;
+      background: white;
+      box-shadow: 8px 8px 0 rgba(16, 16, 21, .92);
+      padding: 16px;
+      font-weight: 900;
+      max-width: 220px;
+    }
+
+    .cardlet.image {
+      top: 42px;
+      right: 6px;
+      background: var(--cyan);
+      transform: rotate(7deg);
+    }
+
+    .cardlet.edit {
+      left: 8px;
+      bottom: 42px;
+      background: var(--acid);
+      transform: rotate(-5deg);
+    }
+
+    .spark {
+      position: absolute;
+      width: 76px;
+      height: 76px;
+      right: 18%;
+      bottom: 14%;
+      background: var(--ember);
+      clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 92%, 50% 70%, 21% 92%, 32% 57%, 2% 35%, 39% 35%);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+
+    section {
+      padding: 64px 0;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 28px;
+      align-items: end;
+      margin-bottom: 28px;
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 14px;
+    }
+
+    h2 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(36px, 5vw, 72px);
+      line-height: .92;
+    }
+
+    .section-head p {
+      max-width: 430px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .skills {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      align-items: start;
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+
+    .shot-card {
+      position: relative;
+      border: 2px solid var(--ink);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .72);
+      box-shadow: 7px 7px 0 rgba(16, 16, 21, .9);
+      overflow: hidden;
+    }
+
+    .shot-card::before {
+      content: "PRIMARY EXAMPLE";
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      z-index: 2;
+      padding: 6px 9px;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      background: var(--acid);
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 1000;
+      letter-spacing: .04em;
+      box-shadow: 3px 3px 0 var(--ink);
+    }
+
+    .shot-card img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      background: white;
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .shot-caption {
+      padding: 9px 12px 11px;
+    }
+
+    .shot-caption strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 15px;
+      line-height: 1.15;
+    }
+
+    .shot-caption span {
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 12px;
+    }
+
+    .skill-card {
+      position: relative;
+      min-height: 390px;
+      padding: 26px;
+      border: 2px solid var(--ink);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .64);
+      box-shadow: 12px 12px 0 rgba(16, 16, 21, .88);
+      overflow: hidden;
+    }
+
+    .skill-card:nth-child(2) {
+      background: rgba(213, 255, 63, .32);
+    }
+
+    .tag {
+      display: inline-flex;
+      padding: 7px 10px;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      background: white;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    h3 {
+      margin: 22px 0 12px;
+      font-size: clamp(28px, 3.4vw, 46px);
+      line-height: .96;
+      letter-spacing: 0;
+    }
+
+    .skill-card p {
+      color: #34313b;
+      line-height: 1.55;
+      font-size: 15px;
+    }
+
+    .feature-list {
+      margin: 20px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 0;
+    }
+
+    .feature-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px 0;
+      border-top: 1px solid var(--line);
+      line-height: 1.42;
+      font-size: 15px;
+    }
+
+    .feature-list li::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      margin-top: 7px;
+      flex: 0 0 auto;
+      background: var(--ember);
+      transform: rotate(45deg);
+    }
+
+    .feature-list code {
+      white-space: nowrap;
+      font-size: .92em;
+    }
+
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border: 2px solid var(--ink);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 12px 12px 0 var(--ink);
+      background: white;
+    }
+
+    .step {
+      min-height: 210px;
+      padding: 22px;
+      border-right: 2px solid var(--ink);
+      background:
+        linear-gradient(160deg, rgba(255, 75, 47, .10), transparent 48%),
+        white;
+    }
+
+    .step:last-child {
+      border-right: 0;
+    }
+
+    .num {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 18px;
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      background: var(--acid);
+      font-weight: 1000;
+    }
+
+    .step strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 20px;
+    }
+
+    .step span {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    .metric {
+      padding: 24px;
+      border: 2px solid var(--ink);
+      border-radius: 8px;
+      background: var(--ink);
+      color: white;
+      min-height: 180px;
+    }
+
+    .metric b {
+      display: block;
+      color: var(--acid);
+      font-size: clamp(38px, 6vw, 76px);
+      line-height: .9;
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 16px;
+      color: rgba(255, 255, 255, .78);
+      line-height: 1.5;
+    }
+
+    .terminal {
+      border: 2px solid var(--ink);
+      border-radius: 8px;
+      background: #111116;
+      color: #f6f1e8;
+      box-shadow: 12px 12px 0 var(--ember);
+      overflow: hidden;
+    }
+
+    .terminal-bar {
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, .12);
+      background: #1d1d25;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--ember);
+    }
+
+    .dot:nth-child(2) {
+      background: var(--acid);
+    }
+
+    .dot:nth-child(3) {
+      background: var(--cyan);
+    }
+
+    pre {
+      margin: 0;
+      padding: 24px;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    code {
+      font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
+    }
+
+    .footer {
+      padding: 54px 0 70px;
+      color: var(--muted);
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      border-top: 2px solid var(--ink);
+      padding-top: 22px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes pulse {
+      50% {
+        transform: scale(1.14) rotate(12deg);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .hero,
+      .skills,
+      .matrix {
+        grid-template-columns: 1fr;
+      }
+
+      .showcase-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .hero {
+        min-height: auto;
+      }
+
+      .stage {
+        min-height: 420px;
+      }
+
+      .deck {
+        width: min(76vw, 390px);
+      }
+
+      .orbit {
+        width: min(82vw, 460px);
+      }
+
+      .pipeline {
+        grid-template-columns: 1fr;
+      }
+
+      .step {
+        border-right: 0;
+        border-bottom: 2px solid var(--ink);
+      }
+
+      .step:last-child {
+        border-bottom: 0;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .shell {
+        width: min(100% - 28px, 1180px);
+      }
+
+      h1 .line {
+        white-space: normal;
+      }
+
+      .showcase-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .nav {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .brand {
+        width: 160px;
+      }
+
+      .section-head,
+      .footer-inner {
+        display: block;
+      }
+
+      .section-head p {
+        margin-top: 14px;
+      }
+
+      .cardlet {
+        max-width: 180px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav shell">
+    <a class="brand" href="#top" aria-label="EasyToPPT home">
+      <img src="./assets/brand/easy-to-ppt-logo.png" alt="EasyToPPT logo">
+    </a>
+    <div class="nav-links" aria-label="Page navigation">
+      <a href="#showcase">Showcase</a>
+      <a href="#skills">Skills</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#install">Quick Start</a>
+      <a href="#github">GitHub</a>
+    </div>
+  </nav>
+
+  <main id="top">
+    <header class="hero shell">
+      <div>
+        <span class="kicker">Dual Skill Presentation Engine</span>
+        <h1>
+          <span class="line">Turn content into slides.</span>
+          <span class="line">Turn slides back into</span>
+          <span class="line">editable decks.</span>
+        </h1>
+        <p class="hero-copy">
+          EasyToPPT bundles two Codex skills: one generates ordered, polished PPT image pages from source material; the other reconstructs screenshots and page images into editable PowerPoint files.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="#skills">Explore the skills</a>
+          <a class="button secondary" href="#install">Package for GitHub</a>
+        </div>
+      </div>
+
+      <div class="stage" aria-hidden="true">
+        <div class="orbit"></div>
+        <div class="deck"></div>
+        <div class="cardlet image">Image PPT<br>ordered PNG pages</div>
+        <div class="cardlet edit">Editable PPT<br>native text + shapes</div>
+        <div class="spark"></div>
+      </div>
+    </header>
+
+    <section id="showcase" class="shell">
+      <div class="section-head">
+        <h2>Primary examples.</h2>
+        <p>Four flagship outputs generated with EasyToPPT, showing different visual systems for AI scientific hypothesis generation.</p>
+      </div>
+
+      <div class="showcase-grid">
+        <article class="shot-card">
+          <img src="./assets/showcase/main-example-oracle-light.png" alt="Scientific editorial EasyToPPT example">
+          <div class="shot-caption">
+            <strong>Scientific editorial</strong>
+            <span>Clean editorial composition with literature, knowledge graphs, agents, and validation pathways.</span>
+          </div>
+        </article>
+
+        <article class="shot-card">
+          <img src="./assets/showcase/main-example-agent-dark.png" alt="Agentic dark EasyToPPT example">
+          <div class="shot-caption">
+            <strong>Agentic dark</strong>
+            <span>Neon technical style for LLM agents, knowledge graphs, validation loops, and hypothesis generation.</span>
+          </div>
+        </article>
+
+        <article class="shot-card">
+          <img src="./assets/showcase/main-example-sketch.png" alt="Hand-drawn EasyToPPT example">
+          <div class="shot-caption">
+            <strong>Hand-drawn explainer</strong>
+            <span>Sketch-note visual language for making the computational-oracle-to-partner story easy to scan.</span>
+          </div>
+        </article>
+
+        <article class="shot-card">
+          <img src="./assets/showcase/main-example-chalkboard.png" alt="Chalkboard EasyToPPT example">
+          <div class="shot-caption">
+            <strong>Chalkboard reasoning</strong>
+            <span>Blackboard-style scientific reasoning map with scoring, causality, agent loops, and validation.</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="skills" class="shell">
+      <div class="section-head">
+        <h2>Two skills, one workflow.</h2>
+        <p>Use image generation when the goal is stunning final pages. Use reconstruction when the goal is editable PowerPoint structure.</p>
+      </div>
+
+      <div class="skills">
+        <article class="skill-card">
+          <span class="tag">Easy To Image PPT</span>
+          <h3>Generate final slide images from real source material.</h3>
+          <p>
+            Builds Chinese academic and report-style slide images through a gated workflow: source analysis, outline approval, style previews, Image2 generation, and QA.
+          </p>
+          <ul class="feature-list">
+            <li>Delivers ordered PNG slides, from <code>slide_01.png</code> onward.</li>
+            <li>Locks outline and visual direction before final generation.</li>
+            <li>Preserves strict figures: plots, screenshots, tables, and lab images.</li>
+          </ul>
+        </article>
+
+        <article class="skill-card">
+          <span class="tag">Easy To Edit PPT</span>
+          <h3>Reconstruct screenshots into editable PowerPoint decks.</h3>
+          <p>
+            Converts slide images into editable PPTX files by combining OCR, clean backgrounds, native object reconstruction, asset preservation, validation, and repair.
+          </p>
+          <ul class="feature-list">
+            <li>Creates editable text boxes and native shapes where reliable.</li>
+            <li>Keeps dense diagrams as movable assets when fidelity matters.</li>
+            <li>Returns the PPTX path, run directory, report, and editability summary.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="pipeline" class="shell">
+      <div class="section-head">
+        <h2>Built for controlled automation.</h2>
+        <p>No blind one-shot generation. EasyToPPT uses gates, manifests, reports, and repair loops so the output stays understandable.</p>
+      </div>
+
+      <div class="pipeline">
+        <div class="step">
+          <div class="num">1</div>
+          <strong>Analyze</strong>
+          <span>Read source material or slide images, extract intent, page structure, text, visual regions, and constraints.</span>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <strong>Plan</strong>
+          <span>Create approved outlines, per-slide content, region manifests, and style directions before final output.</span>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <strong>Generate</strong>
+          <span>Use Image2-style generation for slide images, or OCR plus PPTX construction for editable decks.</span>
+        </div>
+        <div class="step">
+          <div class="num">4</div>
+          <strong>Validate</strong>
+          <span>Check page order, Chinese text quality, figure preservation, editable object boundaries, and final delivery paths.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="shell">
+      <div class="matrix">
+        <div class="metric">
+          <b>2</b>
+          <span>Specialized Codex skills packaged as one presentation automation project.</span>
+        </div>
+        <div class="metric">
+          <b>16:9</b>
+          <span>Default visual target for full-slide image generation and PPT reconstruction.</span>
+        </div>
+        <div class="metric">
+          <b>3</b>
+          <span>Region modes for editability: native, hybrid, and asset.</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="install" class="shell">
+      <div class="section-head">
+        <h2>Ready for GitHub.</h2>
+        <p>The repository is static-site friendly and can be published with GitHub Pages from the root directory.</p>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+        <pre><code>git clone https://github.com/&lt;your-name&gt;/EasyToPPT.git
+cd EasyToPPT
+
+# Skill 1: generate ordered slide images
+EasyToImagePPT/easy-to-image-ppt/SKILL.md
+
+# Skill 2: reconstruct editable PPTX files
+EasyToEditPPT/easy-to-edit-ppt-skill/SKILL.md
+
+# For editable PPT OCR config
+cp EasyToEditPPT/easy-to-edit-ppt-skill/ocr_setting.example.json \
+   EasyToEditPPT/easy-to-edit-ppt-skill/ocr_setting.json</code></pre>
+      </div>
+    </section>
+
+    <section id="github" class="shell">
+      <div class="section-head">
+        <h2>What this project says.</h2>
+        <p>EasyToPPT is not another PPT template. It is a structured agent workflow for presentation generation, reconstruction, QA, and repair.</p>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+        <pre><code>Image route:
+source material -> approved outline -> style collages -> final slide PNGs
+
+Editable route:
+slide image -> OCR -> clean background -> native/hybrid/assets -> editable PPTX
+
+Principle:
+preserve truth, preserve visual fidelity, expose the editability boundary.</code></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer shell">
+    <div class="footer-inner">
+      <strong>EasyToPPT</strong>
+      <span>Dual skill presentation automation for Codex.</span>
+    </div>
+  </footer>
+</body>
+</html>
